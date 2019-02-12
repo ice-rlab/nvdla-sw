@@ -45,6 +45,7 @@
 
 #include <cstdio> // snprintf, fopen
 #include <string>
+#include <sys/time.h>
 
 #define OUTPUT_DIMG "output.dimg"
 
@@ -103,7 +104,7 @@ static NvDlaError copyImageToInputTensor
 
     PROPAGATE_ERROR(createImageCopy(appArgs, R8Image, tensorDesc, tensorImage));
 
-    //tensorImage->printBuffer(true);  /* Print the input Buffer */ 
+    //tensorImage->printBuffer(true);  /* Print the input Buffer */
 
     PROPAGATE_ERROR(DIMG2DlaBuffer(tensorImage, pImgBuffer));
 

@@ -276,7 +276,7 @@ validate_data_cube(struct dla_data_cube src_data_cube,
 	if ((src_data_cube.width > DCUBE_MAX_WIDTH) ||
 	    (src_data_cube.height > DCUBE_MAX_HEIGHT) ||
 	    (src_data_cube.channel > DCUBE_MAX_CHANNEL)) {
-		dla_error("Invalid SrcInput Cude[W: %u, H: %u, C: %u]",
+		dla_error("Invalid SrcInput Cube[W: %u, H: %u, C: %u]",
 				src_data_cube.width, src_data_cube.height,
 				src_data_cube.channel);
 		ret = ERR(INVALID_INPUT);
@@ -286,7 +286,7 @@ validate_data_cube(struct dla_data_cube src_data_cube,
 	if ((dst_data_cube.width > DCUBE_MAX_WIDTH) ||
 	    (dst_data_cube.height > DCUBE_MAX_HEIGHT) ||
 	    (dst_data_cube.channel > DCUBE_MAX_CHANNEL)) {
-		dla_error("Invalid DstInput Cude[W: %u, H: %u, C: %u]",
+		dla_error("Invalid DstInput Cube[W: %u, H: %u, C: %u]",
 				dst_data_cube.width, dst_data_cube.height,
 				dst_data_cube.channel);
 		ret = ERR(INVALID_INPUT);

@@ -4,8 +4,10 @@
 
 For the most part, this repository follows mainline ``nvdla/sw``.
 However, it contains minor changes originally implemented in https://github.com/CSL-KU/nvdla-sw as well as other changes to compile with the latest ``riscv`` kernel in https://github.com/firesim/riscv-linux.
-The one main change from mainline is the exclusion of commit 16befcb84f8ccd2b3d1b0683b965375ae11274df (https://github.com/nvdla/sw/commit/16befcb84f8ccd2b3d1b0683b965375ae11274df).
-When added the prebuilt regressions hang and/or fail.
+
+Note: The prebuilt regressions DO NOT work with commit [16befcb84f8ccd2b3d1b0683b965375ae11274df](https://github.com/nvdla/sw/commit/16befcb84f8ccd2b3d1b0683b965375ae11274df).
+If you want to test the regressions, remove that commit.
+Otherwise, if you are compiling something and using it yourself, keep that commit.
 
 ## NVDLA
 

@@ -56,6 +56,8 @@
 #include <nvdla_linux.h>
 #include <nvdla_ioctl.h>
 
+//#define DISABLE_PRINTS
+
 static struct nvdla_config nvdla_config_os_initial = {
 	.atom_size = 32,
 	.bdma_enable = true,
@@ -80,34 +82,42 @@ static struct nvdla_config nvdla_config_large = {
 
 void dla_debug(const char *str, ...)
 {
+#ifndef DISABLE_PRINTS
 	va_list args;
 	va_start(args, str);
 	vprintk(pr_fmt(str), args);
 	va_end(args);
+#endif
 }
 
 void dla_info(const char *str, ...)
 {
+#ifndef DISABLE_PRINTS
 	va_list args;
 	va_start(args, str);
 	vprintk(str, args);
 	va_end(args);
+#endif
 }
 
 void dla_warn(const char *str, ...)
 {
+#ifndef DISABLE_PRINTS
 	va_list args;
 	va_start(args, str);
 	vprintk(str, args);
 	va_end(args);
+#endif
 }
 
 void dla_error(const char *str, ...)
 {
+#ifndef DISABLE_PRINTS
 	va_list args;
 	va_start(args, str);
 	vprintk(str, args);
 	va_end(args);
+#endif
 }
 
 void *dla_memset(void *src, int ch, uint64_t len)

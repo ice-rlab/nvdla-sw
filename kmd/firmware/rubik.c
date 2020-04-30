@@ -117,7 +117,7 @@ dla_rubik_enable(struct dla_processor_group *group)
 	reg = FIELD_ENUM(RBK_D_OP_ENABLE_0, OP_EN, ENABLE);
 	rubik_reg_write(D_OP_ENABLE, reg);
 
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 
 	RETURN(0);
 }
@@ -241,7 +241,7 @@ processor_rubik_program(struct dla_processor_group *group)
 	}
 
 exit:
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }
 
@@ -274,7 +274,7 @@ dla_rubik_program(struct dla_processor_group *group)
 	dla_trace("Enter: %s", __func__);
 
 	if (!engine->config_data->rubik_enable) {
-		dla_error("RUBIK is not supported for this configuration\n");
+		dla_error("    RUBIK is not supported for this configuration\n");
 		ret = ERR(INVALID_INPUT);
 		goto exit;
 	}
@@ -287,6 +287,6 @@ dla_rubik_program(struct dla_processor_group *group)
 		goto exit;
 
 exit:
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }

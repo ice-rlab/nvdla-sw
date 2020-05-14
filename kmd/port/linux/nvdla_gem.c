@@ -391,7 +391,7 @@ static const struct drm_ioctl_desc nvdla_drm_ioctls[] = {
 };
 
 static struct drm_driver nvdla_drm_driver = {
-	.driver_features = DRIVER_GEM | DRIVER_PRIME | DRIVER_RENDER,
+	.driver_features = DRIVER_GEM | DRIVER_RENDER,
 
 	.gem_vm_ops = &drm_gem_cma_vm_ops,
 

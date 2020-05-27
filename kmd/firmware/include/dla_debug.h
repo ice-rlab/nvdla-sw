@@ -67,7 +67,8 @@
 #define DEBUG_NETWORK_DATA		0
 
 #define pr_dump_stack(format, ...)
-#define dla_trace(format, ...)
+//#define dla_trace(format, ...)
+#define dla_trace(format, ...) dla_debug(format, __VA_ARGS__)
 
 #define assert(condition)
 

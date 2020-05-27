@@ -40,10 +40,7 @@ namespace nvdla
 namespace priv
 {
 
-Emulator::Emulator() :
-        m_thread(),
-        m_threadActive(false),
-        m_signalShutdown(false)
+Emulator::Emulator()
 {
 
 }
@@ -53,124 +50,44 @@ Emulator::~Emulator()
 
 }
 
-bool Emulator::ping()
+NvDlaError Emulator::submit(NvU8* task_mem)
 {
-    return m_threadActive;
-}
-
-NvDlaError Emulator::submit(NvU8* task_mem, bool blocking)
-{
-    m_taskQueue.push(task_mem);
-
-    if (blocking) {
-        // wait until queue becomes empty
-        while (!m_taskQueue.empty()) {
-            NvDlaThreadYield();
-        }
-    }
-
-    return NvDlaSuccess;
-}
-
-NvDlaError Emulator::start()
-{
-    NvDlaError e = NvDlaSuccess;
-
-    PROPAGATE_ERROR_FAIL(NvDlaThreadCreate(threadFunction, this, &m_thread), "Failed to create thread");
-
-    return NvDlaSuccess;
-
-fail:
-    return e;
-}
-
-void Emulator::threadFunction(void* arg)
-{
-    Emulator* engine = static_cast<Emulator*>(arg);
-    engine->run();
-}
-
-bool Emulator::stop()
-{
-    bool ok = true;
-
-    if (m_thread)
-    {
-        m_signalShutdown = true;
-        NvDlaThreadJoin(m_thread);
-        m_thread = NULL;
-    }
-
-    return ok;
-}
-
-bool Emulator::run()
-{
-    bool ok = true;
-    m_threadActive = true;
-
     EMUInterface* emu_if = new EMUInterfaceA();
 
-    NvDlaDebugPrintf("Emulator starting\n");
+    EMUTaskDescAccessor task_desc = emu_if->taskDescAccessor(task_mem);
 
-    while (true)
+    NvU32 numAddresses = *task_desc.numAddresses();
+    std::vector<NvU8*> mappedAddressList;
+    mappedAddressList.resize(numAddresses);
+
+    // Replace all mem handles with mapped addresses
+    for (NvU32 ii=0; ii<numAddresses; ii++)
     {
-        if (!m_taskQueue.empty())
-        {
-            NvU8* task_mem = m_taskQueue.front();
-            NvDlaDebugPrintf("Work Found!\n");
+        void* base = *((void **)task_desc.addressList(ii).hMem());
+        NvU32 offset = *task_desc.addressList(ii).offset();
 
-            EMUTaskDescAccessor task_desc = emu_if->taskDescAccessor(task_mem);
-
-            NvU32 numAddresses = *task_desc.numAddresses();
-            std::vector<NvU8*> mappedAddressList;
-            mappedAddressList.resize(numAddresses);
-
-            // Replace all mem handles with mapped addresses
-            for (NvU32 ii=0; ii<numAddresses; ii++)
-            {
-                void* base = *((void **)task_desc.addressList(ii).hMem());
-                NvU32 offset = *task_desc.addressList(ii).offset();
-
-                if (base == 0) {
-                    mappedAddressList[ii] = NULL;
-                }
-                else {
-                    mappedAddressList[ii] = (NvU8*)base + offset;
-                }
-            }
-
-            // Process the task
-            processTask(task_mem, mappedAddressList);
-            NvDlaDebugPrintf("Work Done\n");
-
-            m_taskQueue.pop();
-            continue;
+        if (base == 0) {
+            mappedAddressList[ii] = NULL;
         }
-
-        if (m_signalShutdown)
-        {
-            NvDlaDebugPrintf("Shutdown signal received, exiting\n");
-            break;
-        }
-
-        if (m_taskQueue.empty())
-        {
-            NvDlaSleepMS(500);
+        else {
+            mappedAddressList[ii] = (NvU8*)base + offset;
         }
     }
 
-    // Cleanup
-    while (!m_taskQueue.empty())
+    // Process the task
+    if (debugState())
     {
-        m_taskQueue.pop();
+        NvDlaDebugPrintf("Processing new EMU task\n");
+    }
+    processTask(task_mem, mappedAddressList);
+    if (debugState())
+    {
+        NvDlaDebugPrintf("Finished EMU task\n");
     }
 
     delete emu_if;
-    m_threadActive = false;
-    m_signalShutdown = false;
 
-    return ok;
+    return NvDlaSuccess;
 }
 
 NvDlaError Emulator::processTask(NvU8* task_mem, std::vector<NvU8*> addressList)
@@ -189,6 +106,10 @@ NvDlaError Emulator::processTask(NvU8* task_mem, std::vector<NvU8*> addressList)
 
     for ( NvU16 op = 0; op < numOperations; ++op)
     {
+        if (debugState())
+        {
+            NvDlaDebugPrintf("Running EMU operation %u/%u\n", op + 1, numOperations);
+        }
         // follow the same technique to obtain op_container and buffer_container accessors for each op as the compiler side
         // this short-cut assumes that the op and buffer containers for all batches were placed contiguous in memory
 
@@ -216,6 +137,7 @@ NvDlaError Emulator::processTask(NvU8* task_mem, std::vector<NvU8*> addressList)
         }
     }
 fail:
+    delete emu_if;
     return e;
 }
 

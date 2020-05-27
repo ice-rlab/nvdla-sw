@@ -41,17 +41,6 @@
 #define NVDLA_OPEN_APPEND (0x8)
 
 /*
- * Thread structures
- */
-struct NvDlaThreadRec {
-    void *handle;
-};
-typedef struct NvDlaThreadRec NvDlaThread;
-typedef struct NvDlaThreadRec* NvDlaThreadHandle;
-
-typedef void (*NvDlaThreadFunction)(void *args);
-
-/*
  * Files and directory structures.
  */
 typedef enum {
@@ -107,15 +96,6 @@ void NvDlaDebugPrintf( const char *format, ... );
 
 NvU32 NvDlaGetTimeMS(void);
 void NvDlaSleepMS(NvU32 msec);
-
-/*
- * Thread related functions
- */
-NvDlaError
-NvDlaThreadCreate( NvDlaThreadFunction function, void *args,
-    NvDlaThreadHandle *thread);
-void NvDlaThreadJoin(NvDlaThreadHandle thread);
-void NvDlaThreadYield(void);
 
 /*
  * File and directory operations

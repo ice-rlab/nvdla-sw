@@ -153,31 +153,13 @@ Runtime::~Runtime()
 
 bool Runtime::initEMU(void)
 {
-    bool ok = true;
-
     // Ping EMU device
     if (!m_emu_engine)
     {
         m_emu_engine = new Emulator();
-        m_emu_engine->start();
-
-        // Wait for emulator engine to warm up
-        // We should have the ability to timeout here
-        /*while (!m_emu_engine->ping())
-        {
-            NvDlaSleepMS(200);
-        }*/
-    }
-    else
-    {
-        if (!m_emu_engine->ping())
-        {
-            gLogError << "Emu ping failed (timeout)" << endl;
-            ok = false;
-        }
     }
 
-    return ok;
+    return true;
 }
 
 void Runtime::stopEMU(void)
@@ -185,7 +167,6 @@ void Runtime::stopEMU(void)
     if (m_emu_engine == NULL)
         return;
 
-    m_emu_engine->stop();
     delete m_emu_engine;
     m_emu_engine = NULL;
 }
@@ -695,7 +676,7 @@ NvDlaError Runtime::submitInternal()
 
                     fillEMUTaskAddressList(task, *(emu_task_descs.back()));
 
-                    PROPAGATE_ERROR_FAIL( m_emu_engine->submit(task_mem, 1) );
+                    PROPAGATE_ERROR_FAIL( m_emu_engine->submit(task_mem) );
 
                     emu_instance = (emu_instance + 1) % num_emu_instances;
 

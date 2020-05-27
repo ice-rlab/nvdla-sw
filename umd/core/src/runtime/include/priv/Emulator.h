@@ -48,19 +48,14 @@ public: // externally facing
     Emulator();
     virtual ~Emulator();
 
-    bool ping();
-
-    NvDlaError submit(NvU8* task_mem, bool blocking);
-    NvDlaError start();
-    bool stop();
-    bool run();
+    NvDlaError submit(NvU8* task_mem);
 
 public: // internally facing
+    inline bool debugState() { return false; }
     inline bool debugPrint() { return false; }
     inline bool debugOps() { return false; }
 
 protected:
-    static void threadFunction(void* arg);
     NvDlaError processTask(NvU8* task_mem, std::vector<NvU8*> addressList);
 
     NvS8 getBpe(EMUBufferDescAccessor buffer);
@@ -70,14 +65,6 @@ protected:
                          EMUPowerBufferDescsAccessor bufDescs, std::vector<NvU8*> addressList);
     NvDlaError executeSoftmax(EMUSoftmaxOpDescAccessor opDesc, EMUCommonOpDescAccessor commonOpDesc,
                            EMUSoftmaxBufferDescsAccessor bufDescs, std::vector<NvU8*> addressList);
-
-private:
-    std::queue<NvU8*> m_taskQueue;
-
-    NvDlaThreadHandle m_thread;
-    bool m_threadActive;
-
-    bool m_signalShutdown;
 };
 
 } // nvdla::priv

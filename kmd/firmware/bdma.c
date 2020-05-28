@@ -87,7 +87,7 @@ dla_bdma_enable(struct dla_processor_group *group)
 {
 	struct dla_engine *engine = dla_get_engine();
 
-	dla_debug("Enter: %s\n", __func__);
+	dla_trace("Enter: %s\n", __func__);
 
 	if (group->surface_desc->bdma_surface.num_transfers == (uint16_t)0) {
 		group->events |= ((uint8_t)1 << DLA_EVENT_OP_COMPLETED);
@@ -111,7 +111,7 @@ dla_bdma_enable(struct dla_processor_group *group)
 							GRP1_LAUNCH, YES));
 
 exit:
-	dla_debug("Exit: %s\n", __func__);
+	dla_trace("Exit : %s\n", __func__);
 	return 0;
 }
 
@@ -135,7 +135,7 @@ processor_bdma_program_slot(struct dla_bdma_surface_desc *bdma_surface,
 	uint8_t  bdma_free_slots = 0;
 	struct dla_engine *engine = dla_get_engine();
 
-	dla_debug("Enter: %s\n", __func__);
+	dla_trace("Enter: %s\n", __func__);
 
 	/* make sure there're enough free slots */
 	if (bdma_free_slots <= 0) {
@@ -196,7 +196,7 @@ processor_bdma_program_slot(struct dla_bdma_surface_desc *bdma_surface,
 	bdma_reg_write(CFG_DST_SURF, transfer->destination_surface);
 	bdma_reg_write(CFG_OP, FIELD_ENUM(BDMA_CFG_OP_0, EN, ENABLE));
 
-	dla_debug("Exit: %s\n", __func__);
+	dla_trace("Exit : %s\n", __func__);
 
 exit:
 	RETURN(ret);
@@ -244,7 +244,7 @@ dla_bdma_program(struct dla_processor_group *group)
 	struct dla_bdma_surface_desc *bdma_surface;
 	struct dla_engine *engine = dla_get_engine();
 
-	dla_debug("Enter: %s\n", __func__);
+	dla_trace("Enter: %s\n", __func__);
 
 	if (!engine->config_data->bdma_enable) {
 		dla_error("BDMA is not supported for this configuration\n");
@@ -254,12 +254,12 @@ dla_bdma_program(struct dla_processor_group *group)
 
 	bdma_surface = &group->surface_desc->bdma_surface;
 
-	dla_debug("Num of transfers %u\n", bdma_surface->num_transfers);
+	dla_debug("    NumTransfers:%u\n", bdma_surface->num_transfers);
 	if (bdma_surface->num_transfers == (uint16_t)0)
 		goto exit;
 
 	if (bdma_surface->num_transfers > NUM_MAX_BDMA_OPS) {
-		dla_error("Invalid number of transfers\n");
+		dla_error("    Invalid NumTransfers\n");
 		ret = ERR(INVALID_INPUT);
 		goto exit;
 	}
@@ -275,6 +275,6 @@ dla_bdma_program(struct dla_processor_group *group)
 			MASK(GLB_S_INTR_MASK_0, BDMA_DONE_MASK0));
 
 exit:
-	dla_debug("Exit: %s\n", __func__);
+	dla_trace("Exit : %s\n", __func__);
 	RETURN(ret);
 }

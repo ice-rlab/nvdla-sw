@@ -236,7 +236,7 @@ dla_conv_enable(struct dla_processor_group *group)
 	csc_reg_write(D_OP_ENABLE, reg);
 	cdma_reg_write(D_OP_ENABLE, reg);
 
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 
 	RETURN(0);
 }
@@ -738,7 +738,7 @@ processor_conv_program(struct dla_processor_group *group)
 	cdma_reg_write(D_BANK, reg);
 
 exit:
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }
 
@@ -774,6 +774,6 @@ dla_conv_program(struct dla_processor_group *group)
 		goto exit;
 
 exit:
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }

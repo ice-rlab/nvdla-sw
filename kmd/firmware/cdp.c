@@ -115,7 +115,7 @@ dla_cdp_enable(struct dla_processor_group *group)
 	uint8_t perf_reg;
 	struct dla_engine *engine = dla_get_engine();
 
-	dla_debug("Enter: %s\n", __func__);
+	dla_trace("Enter: %s\n", __func__);
 
 	if (engine->stat_enable == (uint32_t)1) {
 		perf_reg = (map_perf_dma[1] <<
@@ -135,7 +135,7 @@ dla_cdp_enable(struct dla_processor_group *group)
 	reg = FIELD_ENUM(CDP_D_OP_ENABLE_0, OP_EN, ENABLE);
 	cdp_reg_write(D_OP_ENABLE, reg);
 
-	dla_debug("Exit: %s\n", __func__);
+	dla_trace("Exit : %s\n", __func__);
 
 	RETURN(0);
 }
@@ -158,25 +158,25 @@ processor_cdp_program(struct dla_processor_group *group)
 	struct dla_cdp_op_desc *cdp_op;
 	struct dla_cdp_surface_desc *cdp_surface;
 
-	dla_debug("Enter: %s\n", __func__);
+	dla_trace("Enter: %s\n", __func__);
 
 	cdp_op = &group->operation_desc->cdp_op;
 	cdp_surface = &group->surface_desc->cdp_surface;
 
 	/* Argument check */
 	if (cdp_surface->src_data.type == DLA_MEM_HW) {
-		dla_error("Invalid source memory type\n");
+		dla_error("    Invalid source memory type\n");
 		ret = ERR(INVALID_INPUT);
 		goto exit;
 	}
 	if (cdp_surface->dst_data.type == DLA_MEM_HW) {
-		dla_error("Invalid destination memory type\n");
+		dla_error("    Invalid destination memory type\n");
 		ret = ERR(INVALID_INPUT);
 		goto exit;
 	}
 
 	if (cdp_op->in_precision != cdp_op->out_precision) {
-		dla_error("CDP does not support precision conversion\n");
+		dla_error("    CDP does not support precision conversion\n");
 		ret = ERR(INVALID_INPUT);
 		goto exit;
 	}
@@ -292,7 +292,7 @@ processor_cdp_program(struct dla_processor_group *group)
 	cdp_reg_write(D_FUNC_BYPASS, reg);
 
 exit:
-	dla_debug("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }
 
@@ -370,7 +370,7 @@ dla_cdp_program(struct dla_processor_group *group)
 {
 	int32_t ret;
 
-	dla_debug("Enter: %s", __func__);
+	dla_trace("Enter: %s", __func__);
 	dla_enable_intr(MASK(GLB_S_INTR_MASK_0, CDP_DONE_MASK1) |
 			MASK(GLB_S_INTR_MASK_0, CDP_DONE_MASK0));
 
@@ -379,6 +379,6 @@ dla_cdp_program(struct dla_processor_group *group)
 		goto exit;
 
 exit:
-	dla_debug("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }

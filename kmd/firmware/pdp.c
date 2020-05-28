@@ -125,9 +125,7 @@ dla_pdp_set_producer(int32_t group_id, int32_t rdma_group_id)
 {
 	uint32_t reg;
 
-	dla_trace("Enter: %s", __func__);
-
-	dla_debug("group id %d rdma id %d\n", group_id, rdma_group_id);
+	dla_trace("Enter: %s. Group:%d RDMAId:%d", __func__, group_id, rdma_group_id);
 
 	reg = group_id << SHIFT(PDP_S_POINTER_0, PRODUCER);
 	pdp_reg_write(S_POINTER, reg);
@@ -135,7 +133,7 @@ dla_pdp_set_producer(int32_t group_id, int32_t rdma_group_id)
 	reg = rdma_group_id << SHIFT(PDP_RDMA_S_POINTER_0, PRODUCER);
 	pdp_rdma_reg_write(S_POINTER, reg);
 
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 }
 
 int
@@ -158,7 +156,7 @@ dla_pdp_enable(struct dla_processor_group *group)
 		group->start_time = dla_get_time_us();
 	}
 
-	dla_debug("rdma needed %u\n", group->is_rdma_needed);
+	dla_debug("    RDMA needed %u\n", group->is_rdma_needed);
 
 	/**
 	 * enable all sub-modules
@@ -171,7 +169,7 @@ dla_pdp_enable(struct dla_processor_group *group)
 	pdp_reg_write(D_OP_ENABLE, reg);
 
 exit:
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }
 
@@ -194,7 +192,7 @@ validate_strides(uint8_t stride_x, uint8_t stride_y)
 	int32_t ret = 0;
 
 	if (stride_x < 1 || stride_y < 1 || stride_x > 8 || stride_y > 8) {
-		dla_error("Invalid Stride (x[%d], y[%d])\n", stride_x, stride_y);
+		dla_error("    Invalid Stride (x[%d], y[%d])\n", stride_x, stride_y);
 		ret = ERR(INVALID_INPUT);
 	}
 
@@ -214,7 +212,7 @@ vaildate_pdp_configs(struct dla_processor_group *group)
 	pdp_surface = &group->surface_desc->pdp_surface;
 
 	if (pdp_surface->dst_data.type == DLA_MEM_HW) {
-		dla_error("Destination buffer for PDP has to be either MC or CV");
+		dla_error("    Destination buffer for PDP has to be either MC or CV");
 		ret = ERR(INVALID_INPUT);
 		goto exit;
 	}
@@ -233,31 +231,31 @@ vaildate_pdp_configs(struct dla_processor_group *group)
 		goto exit;
 
 	if (pdp_op->split_num > MAX_SPLIT_NUM) {
-		dla_error("Invalid split_num: %u\n", pdp_op->split_num);
+		dla_error("    Invalid split_num: %u\n", pdp_op->split_num);
 		ret = ERR(INVALID_INPUT);
 		goto exit;
 	}
 
 	if (pdp_op->pool_width >= ARRAY_SIZE(map_pool_kernel)) {
-		dla_error("Invalid pool_width: %u\n", pdp_op->pool_width);
+		dla_error("    Invalid pool_width: %u\n", pdp_op->pool_width);
 		ret = ERR(INVALID_INPUT);
 		goto exit;
 	}
 
 	if (pdp_op->pool_height >= ARRAY_SIZE(map_pool_kernel)) {
-		dla_error("Invalid pool_height: %u\n", pdp_op->pool_height);
+		dla_error("    Invalid pool_height: %u\n", pdp_op->pool_height);
 		ret = ERR(INVALID_INPUT);
 		goto exit;
 	}
 
 	if (pdp_op->pool_mode >= ARRAY_SIZE(map_pool)) {
-		dla_error("Invalid pool_mode: %u\n", pdp_op->pool_mode);
+		dla_error("    Invalid pool_mode: %u\n", pdp_op->pool_mode);
 		ret = ERR(INVALID_INPUT);
 		goto exit;
 	}
 
 exit:
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }
 
@@ -477,7 +475,7 @@ processor_pdp_program(struct dla_processor_group *group)
 	pdp_reg_write(D_DATA_FORMAT, reg);
 
 exit:
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }
 
@@ -521,6 +519,6 @@ dla_pdp_program(struct dla_processor_group *group)
 		goto exit;
 
 exit:
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }

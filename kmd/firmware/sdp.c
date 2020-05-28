@@ -222,7 +222,7 @@ dla_sdp_enable(struct dla_processor_group *group)
 	reg = FIELD_ENUM(SDP_D_OP_ENABLE_0, OP_EN, ENABLE);
 	sdp_reg_write(D_OP_ENABLE, reg);
 
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 
 	RETURN(0);
 }
@@ -726,7 +726,7 @@ processor_sdp_program(struct dla_processor_group *group)
 	sdp_reg_write(D_CVT_SHIFT, sdp_op->out_cvt.truncate);
 
 exit:
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }
 
@@ -812,6 +812,6 @@ dla_sdp_program(struct dla_processor_group *group)
 		goto exit;
 
 exit:
-	dla_trace("Exit: %s", __func__);
+	dla_trace("Exit : %s", __func__);
 	RETURN(ret);
 }

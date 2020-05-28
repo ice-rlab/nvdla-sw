@@ -110,6 +110,9 @@ static int32_t nvdla_submit(struct drm_device *drm, void *arg,
 	task->nvdla_dev = nvdla_dev;
 	task->file = file;
 
+	/* init spinlock */
+	spin_lock_init(&nvdla_dev->nvdla_lock);
+
 	/* update task desc fields */
 	err = nvdla_fill_task_desc(&local_task, task);
 	if (err)

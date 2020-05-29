@@ -397,6 +397,9 @@ static int32_t nvdla_probe(struct platform_device *pdev)
 	nvdla_dev->pdev = pdev;
 	nvdla_dev->config_data = (struct nvdla_config *)match->data;
 
+	/* init spinlock */
+	spin_lock_init(&nvdla_dev->nvdla_lock);
+
 	init_completion(&nvdla_dev->event_notifier);
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);

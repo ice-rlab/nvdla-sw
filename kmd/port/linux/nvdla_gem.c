@@ -38,11 +38,42 @@
 #include <drm/drm_drv.h>
 
 #include <linux/dma-mapping.h>
+#include <linux/io.h>
 
 #include <nvdla_linux.h>
 #include <nvdla_ioctl.h>
 
 #define to_nvdla_obj(x) container_of(x, struct nvdla_gem_object, object)
+
+/* New handler for register read ioctl */
+static int nvdla_reg_read_ioctl(struct drm_device *dev, void *data,
+				struct drm_file *file_priv)
+{
+	struct nvdla_reg *reg = data;
+	struct nvdla_device *nvdla_dev = dev->dev_private;
+	unsigned long flags;
+
+	spin_lock_irqsave(&nvdla_dev->nvdla_lock, flags);
+	reg->data = readl(nvdla_dev->base + reg->addr);
+	spin_unlock_irqrestore(&nvdla_dev->nvdla_lock, flags);
+
+	return 0;
+}
+
+/* New handler for register write ioctl */
+static int nvdla_reg_write_ioctl(struct drm_device *dev, void *data,
+				 struct drm_file *file_priv)
+{
+	struct nvdla_reg *reg = data;
+	struct nvdla_device *nvdla_dev = dev->dev_private;
+	unsigned long flags;
+
+	spin_lock_irqsave(&nvdla_dev->nvdla_lock, flags);
+	writel(reg->data, nvdla_dev->base + reg->addr);
+	spin_unlock_irqrestore(&nvdla_dev->nvdla_lock, flags);
+
+	return 0;
+}
 
 struct nvdla_gem_object {
 	struct drm_gem_object object;
@@ -388,6 +419,10 @@ static const struct drm_ioctl_desc nvdla_drm_ioctls[] = {
 	DRM_IOCTL_DEF_DRV(NVDLA_GEM_CREATE, nvdla_gem_create, DRM_RENDER_ALLOW),
 	DRM_IOCTL_DEF_DRV(NVDLA_GEM_MMAP, nvdla_gem_map_offset, DRM_RENDER_ALLOW),
 	DRM_IOCTL_DEF_DRV(NVDLA_GEM_DESTROY, nvdla_gem_destroy, DRM_RENDER_ALLOW),
+
+	/* New entries for register ioctls */
+	DRM_IOCTL_DEF_DRV(NVDLA_REG_READ, nvdla_reg_read_ioctl, DRM_RENDER_ALLOW),
+	DRM_IOCTL_DEF_DRV(NVDLA_REG_WRITE, nvdla_reg_write_ioctl, DRM_RENDER_ALLOW),
 };
 
 static struct drm_driver nvdla_drm_driver = {
@@ -429,6 +464,9 @@ int32_t nvdla_drm_probe(struct nvdla_device *nvdla_dev)
 	drm = drm_dev_alloc(driver, &nvdla_dev->pdev->dev);
 	if (IS_ERR(drm))
 		return PTR_ERR(drm);
+
+	/* Added: Set dev_private to access nvdla_dev in ioctls */
+	drm->dev_private = nvdla_dev;
 
 	nvdla_dev->drm = drm;
 

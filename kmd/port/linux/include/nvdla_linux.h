@@ -41,6 +41,19 @@
 #include <linux/platform_device.h>
 #include <linux/spinlock.h>
 #include <linux/uaccess.h>
+#include <linux/kfifo.h>
+
+
+/* struct to hold performance metrics for a single hardware layer */ 
+struct nvdla_perf_data { 
+	u64 timestamp;
+	u32 layer_id;  /* layer incrementer */
+	u32 cdma_dat_read_stall;
+	u32 cdma_wt_read_stall; 
+	u32 cdma_dat_read_latency; 
+	u32 cdma_wt_read_latency; 
+};
+
 
 /**
  * @brief			Task information submitted from user space
@@ -99,6 +112,9 @@ struct nvdla_device {
 	struct nvdla_config *config_data;
 	struct platform_device *pdev;
 	struct completion event_notifier;
+	struct kfifo perf_fifo;
+    spinlock_t perf_fifo_lock;
+    u32 perf_layer_id_counter;
 
 	void *engine_context;
 };

@@ -159,6 +159,49 @@ uint32_t dla_reg_read(void *driver_context, uint32_t addr)
 
 static irqreturn_t nvdla_engine_isr(int32_t irq, void *data)
 {
+    struct nvdla_device *nvdla_dev = (struct nvdla_device *)data;
+    struct nvdla_perf_data perf_sample;
+    unsigned long flags;
+    u32 intr_status;
+
+    if (!nvdla_dev)
+        return IRQ_NONE;
+
+    intr_status = readl(nvdla_dev->base + 0x0000c);
+
+    if (intr_status & 0x00077700) {
+        perf_sample.timestamp = ktime_get_ns();
+        perf_sample.layer_id = nvdla_dev->perf_layer_id_counter++;
+
+        perf_sample.cdma_dat_read_stall = readl(nvdla_dev->base + 0x50d8);
+        perf_sample.cdma_wt_read_stall = readl(nvdla_dev->base + 0x50dc);
+        perf_sample.cdma_dat_read_latency = readl(nvdla_dev->base + 0x50e0);
+        perf_sample.cdma_wt_read_latency = readl(nvdla_dev->base + 0x50e4);
+
+        pr_info_ratelimited("NVDLA-PERF-ISR: Layer %u, cdma_dat_stall=%u\n",
+                            perf_sample.layer_id, perf_sample.cdma_dat_read_stall);
+
+        spin_lock_irqsave(&nvdla_dev->perf_fifo_lock, flags);
+        if (!kfifo_is_full(&nvdla_dev->perf_fifo)) {
+            kfifo_in(&nvdla_dev->perf_fifo, &perf_sample, sizeof(perf_sample));
+        }
+        spin_unlock_irqrestore(&nvdla_dev->perf_fifo_lock, flags);
+    }
+
+    spin_lock_irqsave(&nvdla_dev->nvdla_lock, flags);
+
+    dla_isr_handler(nvdla_dev->engine_context);
+    complete(&nvdla_dev->event_notifier); /* This is the critical line */
+
+    spin_unlock_irqrestore(&nvdla_dev->nvdla_lock, flags);
+
+    return IRQ_HANDLED;
+}
+
+/* old ISR
+
+static irqreturn_t nvdla_engine_isr(int32_t irq, void *data)
+{
 	unsigned long flags;
 	struct nvdla_device *nvdla_dev = (struct nvdla_device *)data;
 
@@ -172,6 +215,7 @@ static irqreturn_t nvdla_engine_isr(int32_t irq, void *data)
 
 	return IRQ_HANDLED;
 }
+*/
 
 static int32_t dla_read_dma_address(void *driver_context, void *task_data,
 						int16_t index, void *dst)
@@ -392,6 +436,20 @@ static int32_t nvdla_probe(struct platform_device *pdev)
 	nvdla_dev = devm_kzalloc(dev, sizeof(*nvdla_dev), GFP_KERNEL);
 	if (!nvdla_dev)
 		return -ENOMEM;
+
+	#define PERF_FIFO_SIZE (1024 * sizeof(struct nvdla_perf_data))
+
+    pr_info("NVDLA-PERF: Initializing performance buffer...\n");
+
+    err = kfifo_alloc(&nvdla_dev->perf_fifo, PERF_FIFO_SIZE, GFP_KERNEL);
+    if (err) {
+        pr_err("NVDLA-PERF: Failed to allocate performance kfifo\n");
+        return err;
+    }
+    spin_lock_init(&nvdla_dev->perf_fifo_lock);
+    nvdla_dev->perf_layer_id_counter = 0;
+
+    pr_info("NVDLA-PERF: Performance buffer initialized successfully.\n");
 
 	platform_set_drvdata(pdev, nvdla_dev);
 	nvdla_dev->pdev = pdev;
